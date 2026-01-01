@@ -72,6 +72,88 @@ impl<R: AsyncRead + Unpin> Reader<R> {
         self.next_part_internal(true).await
     }
 
+    /// Parses the entire multipart form.
+    ///
+    /// Reads all parts and organizes them into form values and file uploads.
+    /// Files smaller than max_memory are kept in memory, larger files are
+    /// written to temporary files on disk.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use mime_rs::multipart::Reader;
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let data = b"--boundary\r\n...";
+    /// let mut reader = Reader::new(&data[..], "boundary");
+    /// let form = reader.read_form(32 * 1024 * 1024).await?; // 32 MB max memory
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn read_form(&mut self, max_memory: usize) -> Result<super::formdata::Form> {
+        use super::formdata::{FileHeader, Form};
+        use tokio::io::AsyncReadExt;
+
+        let mut form = Form::new();
+        let mut parts_count = 0;
+        const MAX_PARTS: usize = 1000;
+
+        while let Some(mut part) = self.next_part().await? {
+            parts_count += 1;
+            if parts_count > MAX_PARTS {
+                return Err(Error::MessageTooLarge);
+            }
+
+            let name = match part.form_name() {
+                Some(n) => n.to_string(),
+                None => continue, // Skip parts without a name
+            };
+
+            let filename = part.file_name();
+
+            if filename.is_none() {
+                // Regular form field - read into memory
+                let mut value = String::new();
+                part.read_to_string(&mut value).await?;
+                form.value.entry(name).or_insert_with(Vec::new).push(value);
+            } else {
+                // File upload
+                let filename = filename.unwrap();
+                let mut content = Vec::new();
+                part.read_to_end(&mut content).await?;
+
+                let file_header = if content.len() <= max_memory {
+                    // Keep in memory
+                    FileHeader::new(filename, content, part.header.clone())
+                } else {
+                    // Write to temporary file
+                    use tokio::io::AsyncWriteExt;
+
+                    let tmpfile = format!("/tmp/multipart-{}-{}",
+                        std::process::id(),
+                        uuid::Uuid::new_v4()
+                    );
+
+                    let mut file = tokio::fs::File::create(&tmpfile).await?;
+                    file.write_all(&content).await?;
+                    file.flush().await?;
+                    drop(file);
+
+                    FileHeader::from_file(
+                        filename,
+                        content.len() as i64,
+                        tmpfile,
+                        part.header.clone(),
+                    )
+                };
+
+                form.file.entry(name).or_insert_with(Vec::new).push(file_header);
+            }
+        }
+
+        Ok(form)
+    }
+
     async fn next_part_internal(&mut self, raw_part: bool) -> Result<Option<Part<R>>> {
         if self.boundary.is_empty() {
             return Err(Error::Multipart("boundary is empty".to_string()));
