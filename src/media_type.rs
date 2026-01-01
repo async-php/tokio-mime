@@ -3,7 +3,7 @@
 //! Implements RFC 2045, RFC 2616, and RFC 2231 media type handling.
 
 use crate::error::{Error, Result};
-use crate::grammar::{is_token, is_token_char, is_tspecial};
+use crate::grammar::{is_token, is_tspecial};
 use std::collections::HashMap;
 
 const UPPER_HEX: &[u8] = b"0123456789ABCDEF";
