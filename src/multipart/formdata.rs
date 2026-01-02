@@ -9,7 +9,9 @@ use std::io::Cursor;
 use tokio::fs::File;
 use tokio::io::{AsyncRead, AsyncReadExt};
 
+#[allow(dead_code)]
 const MAX_MEMORY_DEFAULT: usize = 32 << 20; // 32 MB
+#[allow(dead_code)]
 const MAX_PARTS_DEFAULT: usize = 1000;
 
 /// A parsed multipart form.
