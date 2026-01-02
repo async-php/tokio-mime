@@ -68,9 +68,9 @@ fn init_mime() {
     // Set builtin types
     set_mime_types_internal(BUILTIN_TYPES_LOWER, BUILTIN_TYPES_LOWER);
 
-    // Load platform-specific types
+    // Load platform-specific types (errors are ignored)
     #[cfg(any(unix, windows))]
-    crate::platform::init_mime();
+    let _ = crate::platform::init_mime();
 }
 
 /// Internal function to set MIME type mappings.
@@ -206,7 +206,29 @@ pub fn add_extension_type(ext: &str, mime_type: &str) -> Result<()> {
 }
 
 /// Internal function to set an extension type mapping.
-fn set_extension_type(extension: &str, mime_type: &str) -> Result<()> {
+/// This is public for use by platform modules during initialization.
+/// If skip_if_exists is true, the extension will not be overwritten if it already exists.
+pub(crate) fn set_extension_type(extension: &str, mime_type: &str) -> Result<()> {
+    set_extension_type_internal(extension, mime_type, false)
+}
+
+/// Internal function to set an extension type mapping, used during platform initialization.
+/// If skip_if_exists is true, the extension will not be overwritten if it already exists.
+pub(crate) fn set_extension_type_skip_existing(extension: &str, mime_type: &str) -> Result<()> {
+    set_extension_type_internal(extension, mime_type, true)
+}
+
+fn set_extension_type_internal(extension: &str, mime_type: &str, skip_if_exists: bool) -> Result<()> {
+    let ext_lower = extension.to_lowercase();
+
+    // Check if extension already exists (for platform loading)
+    if skip_if_exists {
+        let mime_types_lower = MIME_TYPES_LOWER.read().unwrap();
+        if mime_types_lower.contains_key(&ext_lower) {
+            return Ok(());
+        }
+    }
+
     // Parse media type
     let (just_type, mut params) = parse_media_type(mime_type)?;
 
@@ -217,8 +239,6 @@ fn set_extension_type(extension: &str, mime_type: &str) -> Result<()> {
     } else {
         mime_type.to_string()
     };
-
-    let ext_lower = extension.to_lowercase();
 
     // Update MIME type mappings
     {
@@ -267,9 +287,11 @@ mod tests {
     #[test]
     fn test_extensions_by_type() {
         let exts = extensions_by_type("image/jpeg").unwrap();
+        // Check that at least the builtin extensions are present
         assert!(exts.contains(&".jpg".to_string()));
         assert!(exts.contains(&".jpeg".to_string()));
-        assert_eq!(exts.len(), 2);
+        // Platform-specific databases may add more extensions (e.g., .jpe, .jfif)
+        assert!(exts.len() >= 2);
     }
 
     #[test]

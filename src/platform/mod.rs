@@ -1,13 +1,35 @@
 //! Platform-specific MIME type loading.
 
 #[cfg(unix)]
-pub mod unix;
+mod unix;
 
 #[cfg(windows)]
-pub mod windows;
+mod windows;
 
-#[cfg(unix)]
-pub use unix::init_mime;
+use crate::error::Result;
 
-#[cfg(windows)]
-pub use windows::init_mime;
+/// Initialize MIME types from platform-specific sources.
+///
+/// On Unix systems, reads from:
+/// - /usr/share/mime/globs2 (FreeDesktop Shared MIME-info Database)
+/// - /etc/mime.types, /etc/apache2/mime.types, etc.
+///
+/// On Windows, reads from:
+/// - Registry HKEY_CLASSES_ROOT for extension associations
+pub fn init_mime() -> Result<()> {
+    #[cfg(unix)]
+    {
+        unix::init_mime_unix()
+    }
+
+    #[cfg(windows)]
+    {
+        windows::init_mime_windows()
+    }
+
+    #[cfg(not(any(unix, windows)))]
+    {
+        // Unsupported platform, use builtin types only
+        Ok(())
+    }
+}
