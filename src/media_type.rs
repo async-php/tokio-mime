@@ -213,4 +213,78 @@ mod tests {
         // "----boundary" is a valid token, doesn't need quotes
         assert_eq!(formatted, "multipart/form-data; boundary=----boundary");
     }
+
+    #[test]
+    fn test_parse_media_type_invalid() {
+        // Empty string
+        assert!(parse_media_type("").is_err());
+
+        // No slash
+        assert!(parse_media_type("text").is_err());
+
+        // Invalid characters
+        assert!(parse_media_type("text/html<>").is_err());
+
+        // Whitespace only
+        assert!(parse_media_type("   ").is_err());
+    }
+
+    #[test]
+    fn test_parse_media_type_malformed_params() {
+        // Missing value - parser is lenient and skips malformed parameters
+        let (media_type, params) = parse_media_type("text/html; charset").unwrap();
+        assert_eq!(media_type, "text/html");
+        // "charset" without value is skipped
+        assert!(!params.contains_key("charset"));
+
+        // Unclosed quote - parser is lenient and takes the value as-is
+        let (media_type, params) = parse_media_type("text/html; name=\"value").unwrap();
+        assert_eq!(media_type, "text/html");
+        // Value will have the unclosed quote
+        assert_eq!(params.get("name"), Some(&"\"value".to_string()));
+    }
+
+    #[test]
+    fn test_parse_media_type_multiple_params() {
+        let (media_type, params) =
+            parse_media_type("text/html; charset=utf-8; boundary=abc123").unwrap();
+        assert_eq!(media_type, "text/html");
+        assert_eq!(params.get("charset"), Some(&"utf-8".to_string()));
+        assert_eq!(params.get("boundary"), Some(&"abc123".to_string()));
+    }
+
+    #[test]
+    fn test_parse_media_type_case_insensitive() {
+        let (media_type, params) = parse_media_type("TEXT/HTML; CHARSET=UTF-8").unwrap();
+        assert_eq!(media_type, "text/html");
+        assert_eq!(params.get("charset"), Some(&"UTF-8".to_string()));
+    }
+
+    #[test]
+    fn test_parse_media_type_whitespace() {
+        // Leading/trailing whitespace
+        let (media_type, _) = parse_media_type("  text/html  ").unwrap();
+        assert_eq!(media_type, "text/html");
+
+        // Whitespace around params
+        let (_, params) = parse_media_type("text/html;  charset = utf-8  ").unwrap();
+        assert_eq!(params.get("charset"), Some(&"utf-8".to_string()));
+    }
+
+    #[test]
+    fn test_format_media_type_special_chars() {
+        let mut params = HashMap::new();
+        params.insert("filename".to_string(), "test\"file.txt".to_string());
+        let formatted = format_media_type("application/octet-stream", &params);
+        // Should escape quotes
+        assert!(formatted.contains("filename="));
+    }
+
+    #[test]
+    fn test_format_media_type_empty_param_value() {
+        let mut params = HashMap::new();
+        params.insert("empty".to_string(), "".to_string());
+        let formatted = format_media_type("text/plain", &params);
+        assert_eq!(formatted, "text/plain; empty=\"\"");
+    }
 }

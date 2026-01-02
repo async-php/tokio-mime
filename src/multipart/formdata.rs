@@ -7,7 +7,10 @@ use crate::multipart::reader::MimeHeader;
 use std::collections::HashMap;
 use std::io::Cursor;
 use tokio::fs::File;
-use tokio::io::{AsyncRead, AsyncReadExt};
+use tokio::io::AsyncRead;
+
+#[cfg(test)]
+use tokio::io::AsyncReadExt;
 
 #[allow(dead_code)]
 const MAX_MEMORY_DEFAULT: usize = 32 << 20; // 32 MB

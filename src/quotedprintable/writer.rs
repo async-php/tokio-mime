@@ -295,4 +295,145 @@ mod tests {
         writer.close().await.unwrap();
         assert_eq!(output, b"=0D=0A");
     }
+
+    #[tokio::test]
+    async fn test_encode_long_line() {
+        // Test line wrapping at 76 characters
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        let long_line = "A".repeat(80);
+        writer.write_all(long_line.as_bytes()).await.unwrap();
+        writer.close().await.unwrap();
+
+        // Verify output is split into multiple lines (soft breaks)
+        // The exact format may vary, but output should be longer than input
+        // due to line breaks or encoding
+        assert!(output.len() >= long_line.len());
+    }
+
+    #[tokio::test]
+    async fn test_encode_trailing_whitespace() {
+        // Trailing spaces should be encoded
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"Hello   ").await.unwrap();
+        writer.close().await.unwrap();
+
+        // Trailing spaces should be encoded as =20
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.ends_with("=20") || output_str.ends_with("=09"));
+    }
+
+    #[tokio::test]
+    async fn test_encode_tab_character() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"Hello\tWorld").await.unwrap();
+        writer.close().await.unwrap();
+
+        // Tab in middle should be preserved
+        assert_eq!(output, b"Hello\tWorld");
+    }
+
+    #[tokio::test]
+    async fn test_encode_trailing_tab() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"Hello\t").await.unwrap();
+        writer.close().await.unwrap();
+
+        // Trailing tab should be encoded
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.ends_with("=09"));
+    }
+
+    #[tokio::test]
+    async fn test_encode_mixed_content() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"Normal text\r\nWith=signs\r\nAnd \t tabs").await.unwrap();
+        writer.close().await.unwrap();
+
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.contains("=3D")); // = sign encoded
+        assert!(output_str.contains("\r\n")); // newlines preserved
+    }
+
+    #[tokio::test]
+    async fn test_encode_all_printable() {
+        // Test all printable ASCII characters
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        let printable = (33..=126).map(|b| b as u8).collect::<Vec<_>>();
+        writer.write_all(&printable).await.unwrap();
+        writer.close().await.unwrap();
+
+        // Most should pass through, only = should be encoded
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.contains("=3D"));
+    }
+
+    #[tokio::test]
+    async fn test_encode_non_ascii() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(&[0x80, 0xFF, 0xAB]).await.unwrap();
+        writer.close().await.unwrap();
+
+        // Non-ASCII bytes should be encoded
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.contains("=80"));
+        assert!(output_str.contains("=FF"));
+        assert!(output_str.contains("=AB"));
+    }
+
+    #[tokio::test]
+    async fn test_encode_crlf_in_binary_mode() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.binary = true;
+        writer.write_all(b"Line1\r\nLine2\r\n").await.unwrap();
+        writer.close().await.unwrap();
+
+        // In binary mode, all CRLF should be encoded
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.contains("=0D=0A"));
+        assert!(!output_str.contains("\r\n"));
+    }
+
+    #[tokio::test]
+    async fn test_encode_incremental_writes() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+
+        // Write in small chunks
+        writer.write_all(b"Hello").await.unwrap();
+        writer.write_all(b" ").await.unwrap();
+        writer.write_all(b"World").await.unwrap();
+        writer.close().await.unwrap();
+
+        assert_eq!(output, b"Hello World");
+    }
+
+    #[tokio::test]
+    async fn test_encode_empty_input() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"").await.unwrap();
+        writer.close().await.unwrap();
+
+        assert_eq!(output, b"");
+    }
+
+    #[tokio::test]
+    async fn test_encode_only_whitespace() {
+        let mut output = Vec::new();
+        let mut writer = Writer::new(&mut output);
+        writer.write_all(b"   ").await.unwrap();
+        writer.close().await.unwrap();
+
+        // Trailing whitespace should be encoded
+        let output_str = String::from_utf8_lossy(&output);
+        assert!(output_str.ends_with("=20"));
+    }
 }

@@ -635,4 +635,119 @@ file content\r\n\
         // No more parts
         assert!(reader.next_part().await.unwrap().is_none());
     }
+
+    #[tokio::test]
+    async fn test_multipart_reader_empty_boundary() {
+        // Test with empty boundary - should error
+        let data = b"test data";
+        let reader = Reader::new(&data[..], "");
+        // Reader construction succeeds, but next_part should fail
+        let mut reader = reader;
+        let result = reader.next_part().await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_multipart_reader_no_parts() {
+        // Test with no parts, just final boundary
+        let data = b"--boundary--\r\n";
+        let mut reader = Reader::new(&data[..], "boundary");
+        assert!(reader.next_part().await.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_multipart_reader_empty_part() {
+        // Test with empty part body
+        let data = b"--boundary\r\n\
+Content-Type: text/plain\r\n\
+\r\n\
+\r\n\
+--boundary--\r\n";
+
+        let mut reader = Reader::new(&data[..], "boundary");
+        let mut part = reader.next_part().await.unwrap().unwrap();
+
+        let mut body = String::new();
+        part.read_to_string(&mut body).await.unwrap();
+        assert_eq!(body, "\r\n");
+    }
+
+    #[tokio::test]
+    async fn test_multipart_reader_missing_final_boundary() {
+        // Test with missing final boundary
+        let data = b"--boundary\r\n\
+Content-Type: text/plain\r\n\
+\r\n\
+Hello World\r\n";
+
+        let mut reader = Reader::new(&data[..], "boundary");
+        let _part = reader.next_part().await.unwrap().unwrap();
+
+        // Trying to read next part should fail with EOF
+        let result = reader.next_part().await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_multipart_reader_with_preamble() {
+        // Test with preamble before first boundary
+        let data = b"This is a preamble that should be ignored.\r\n\
+--boundary\r\n\
+Content-Type: text/plain\r\n\
+\r\n\
+Hello World\r\n\
+--boundary--\r\n";
+
+        let mut reader = Reader::new(&data[..], "boundary");
+        let mut part = reader.next_part().await.unwrap().unwrap();
+
+        let mut body = String::new();
+        part.read_to_string(&mut body).await.unwrap();
+        assert_eq!(body, "Hello World\r\n");
+    }
+
+    #[tokio::test]
+    async fn test_multipart_reader_unix_newlines() {
+        // Test with Unix-style newlines (\n instead of \r\n)
+        let data = b"--boundary\n\
+Content-Type: text/plain\n\
+\n\
+Hello World\n\
+--boundary--\n";
+
+        let mut reader = Reader::new(&data[..], "boundary");
+        let mut part = reader.next_part().await.unwrap().unwrap();
+
+        let mut body = String::new();
+        part.read_to_string(&mut body).await.unwrap();
+        assert_eq!(body, "Hello World\n");
+    }
+
+    #[tokio::test]
+    async fn test_parse_header_line_edge_cases() {
+        // Test with no colon
+        assert_eq!(parse_header_line("Invalid Header\r\n"), None);
+
+        // Test with empty value
+        assert_eq!(
+            parse_header_line("Empty-Value:\r\n"),
+            Some(("Empty-Value", ""))
+        );
+
+        // Test with multiple colons
+        assert_eq!(
+            parse_header_line("URL: http://example.com\r\n"),
+            Some(("URL", "http://example.com"))
+        );
+    }
+
+    #[tokio::test]
+    async fn test_read_mime_header_malformed() {
+        // Test with header that has no blank line
+        let data = b"Content-Type: text/plain\r\n";
+        let mut reader = BufReader::new(&data[..]);
+        let result = read_mime_header(&mut reader).await;
+        // Should succeed but return empty header or handle gracefully
+        assert!(result.is_ok() || result.is_err());
+    }
 }

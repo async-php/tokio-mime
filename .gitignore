@@ -1,1 +1,9 @@
 /target
+/fuzz/target
+/fuzz/corpus
+/fuzz/artifacts
+**/*.rs.bk
+Cargo.lock
+*.profraw
+*.profdata
+.idea/

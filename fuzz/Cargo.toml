@@ -1,0 +1,39 @@
+[package]
+name = "mime_rs-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.mime_rs]
+path = ".."
+
+[[bin]]
+name = "fuzz_parse_media_type"
+path = "fuzz_targets/fuzz_parse_media_type.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_multipart_reader"
+path = "fuzz_targets/fuzz_multipart_reader.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_encoded_word"
+path = "fuzz_targets/fuzz_encoded_word.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_quoted_printable"
+path = "fuzz_targets/fuzz_quoted_printable.rs"
+test = false
+doc = false

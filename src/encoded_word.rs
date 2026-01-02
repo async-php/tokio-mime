@@ -482,4 +482,193 @@ mod tests {
         let decoded = decoder.decode(&encoded).unwrap();
         assert_eq!(decoded, original);
     }
+
+    #[test]
+    fn test_b_encoding_roundtrip() {
+        let encoder = WordEncoder::BEncoding;
+        let decoder = WordDecoder::new();
+        let original = "Hello, 世界!";
+        let encoded = encoder.encode("UTF-8", original);
+        let decoded = decoder.decode(&encoded).unwrap();
+        assert_eq!(decoded, original);
+    }
+
+    #[test]
+    fn test_encode_ascii_no_change() {
+        // Pure ASCII should not be encoded
+        let encoder = WordEncoder::QEncoding;
+        let result = encoder.encode("UTF-8", "Hello World");
+        assert_eq!(result, "Hello World");
+    }
+
+    #[test]
+    fn test_encode_with_special_chars() {
+        let encoder = WordEncoder::QEncoding;
+        let encoded = encoder.encode("UTF-8", "test@example.com");
+        // Simple ASCII with @ should not need encoding
+        assert_eq!(encoded, "test@example.com");
+    }
+
+    #[test]
+    fn test_decode_invalid_format() {
+        let decoder = WordDecoder::new();
+        // Missing closing ?=
+        let result = decoder.decode("=?UTF-8?q?Hello");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_decode_invalid_encoding_type() {
+        let decoder = WordDecoder::new();
+        // Invalid encoding type 'x'
+        let result = decoder.decode("=?UTF-8?x?Hello?=");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_decode_empty_encoded_word() {
+        let decoder = WordDecoder::new();
+        let decoded = decoder.decode("=?UTF-8?q??=").unwrap();
+        assert_eq!(decoded, "");
+    }
+
+    #[test]
+    fn test_decode_q_with_underscores() {
+        // In Q encoding, underscores represent spaces
+        let decoder = WordDecoder::new();
+        let decoded = decoder.decode("=?UTF-8?q?Hello_World?=").unwrap();
+        assert_eq!(decoded, "Hello World");
+    }
+
+    #[test]
+    fn test_decode_mixed_text() {
+        let decoder = WordDecoder::new();
+        let decoded = decoder
+            .decode_header("Normal text =?UTF-8?q?encoded?= more text")
+            .unwrap();
+        assert_eq!(decoded, "Normal text encoded more text");
+    }
+
+    #[test]
+    fn test_encode_long_string() {
+        // Test encoding of moderately long strings
+        let encoder = WordEncoder::BEncoding;
+        let long_text = "这是一个测试字符串";
+        let encoded = encoder.encode("UTF-8", long_text);
+
+        // Should be encoded
+        assert!(encoded.starts_with("=?UTF-8?b?"));
+
+        // Should be decodable
+        let decoder = WordDecoder::new();
+        let decoded = decoder.decode(&encoded).unwrap();
+        assert_eq!(decoded, long_text);
+    }
+
+    #[test]
+    fn test_decode_case_insensitive_charset() {
+        let decoder = WordDecoder::new();
+        // UTF-8 should work regardless of case
+        let decoded1 = decoder.decode("=?utf-8?q?Hello?=").unwrap();
+        let decoded2 = decoder.decode("=?UTF-8?q?Hello?=").unwrap();
+        let decoded3 = decoder.decode("=?Utf-8?q?Hello?=").unwrap();
+
+        assert_eq!(decoded1, "Hello");
+        assert_eq!(decoded2, "Hello");
+        assert_eq!(decoded3, "Hello");
+    }
+
+    #[test]
+    fn test_decode_case_insensitive_encoding() {
+        let decoder = WordDecoder::new();
+        // Q and q should both work
+        let decoded1 = decoder.decode("=?UTF-8?Q?Hello?=").unwrap();
+        let decoded2 = decoder.decode("=?UTF-8?q?Hello?=").unwrap();
+
+        assert_eq!(decoded1, decoded2);
+    }
+
+    #[test]
+    fn test_q_decode_hex_values() {
+        let decoder = WordDecoder::new();
+        // Test various hex encoded values
+        let decoded = decoder.decode("=?UTF-8?q?=C3=A9?=").unwrap();
+        assert_eq!(decoded, "é");
+    }
+
+    #[test]
+    fn test_decode_truncated_q_encoding() {
+        let decoder = WordDecoder::new();
+        // Truncated hex sequence
+        let result = decoder.decode("=?UTF-8?q?test=C?=");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_decode_invalid_hex() {
+        let decoder = WordDecoder::new();
+        // Invalid hex characters
+        let result = decoder.decode("=?UTF-8?q?test=GG?=");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_encode_with_tabs() {
+        let encoder = WordEncoder::QEncoding;
+        let text_with_tab = "Hello\tWorld";
+        let encoded = encoder.encode("UTF-8", text_with_tab);
+        // Tab is allowed in needs_encoding check, so it won't be encoded
+        assert_eq!(encoded, "Hello\tWorld");
+    }
+
+    #[test]
+    fn test_decode_adjacent_encoded_words() {
+        // Adjacent encoded words with whitespace between should have whitespace removed
+        let decoder = WordDecoder::new();
+        let decoded = decoder
+            .decode_header("=?UTF-8?q?Part1?= =?UTF-8?q?Part2?=")
+            .unwrap();
+        assert_eq!(decoded, "Part1Part2");
+    }
+
+    #[test]
+    fn test_decode_header_no_encoded_words() {
+        let decoder = WordDecoder::new();
+        let plain = "This is plain text";
+        let decoded = decoder.decode_header(plain).unwrap();
+        assert_eq!(decoded, plain);
+    }
+
+    #[test]
+    fn test_needs_encoding_function() {
+        assert!(!needs_encoding("Simple ASCII"));
+        assert!(needs_encoding("Non-ASCII: é"));
+        assert!(needs_encoding("Chinese: 中文"));
+        assert!(needs_encoding("Emoji: 😀"));
+        assert!(!needs_encoding("Numbers123"));
+        assert!(needs_encoding("Control\x00char"));
+    }
+
+    #[test]
+    fn test_decode_base64_padding() {
+        let decoder = WordDecoder::new();
+        // Test base64 with proper padding
+        let decoded = decoder.decode("=?UTF-8?b?SGVsbG8gV29ybGQ=?=").unwrap();
+        assert_eq!(decoded, "Hello World");
+    }
+
+    #[test]
+    fn test_encode_empty_string() {
+        let encoder = WordEncoder::QEncoding;
+        let encoded = encoder.encode("UTF-8", "");
+        assert_eq!(encoded, "");
+    }
+
+    #[test]
+    fn test_charset_us_ascii() {
+        let decoder = WordDecoder::new();
+        // Test US-ASCII charset
+        let decoded = decoder.decode("=?US-ASCII?q?Hello?=").unwrap();
+        assert_eq!(decoded, "Hello");
+    }
 }
