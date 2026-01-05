@@ -8,6 +8,7 @@ description = "Complete Rust port of Go's mime package with async-first design"
 license = "MIT OR Apache-2.0"
 keywords = ["mime", "multipart", "email", "http", "async"]
 categories = ["asynchronous", "email", "encoding", "parsing", "web-programming"]
+repository = "https://github.com/async-php/mime-rs"
 
 [dependencies]
 tokio = { version = "1.35", features = ["io-util", "fs", "rt", "macros"] }
