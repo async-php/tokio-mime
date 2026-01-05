@@ -31,7 +31,7 @@ impl<W: AsyncWrite> Writer<W> {
     /// # Examples
     ///
     /// ```no_run
-    /// use mime_rs::quotedprintable::Writer;
+    /// use tokio_mime::quotedprintable::Writer;
     /// use tokio::io::AsyncWriteExt;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {

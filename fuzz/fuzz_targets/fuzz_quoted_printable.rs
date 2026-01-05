@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use mime_rs::quotedprintable::Reader;
+use tokio_mime::quotedprintable::Reader;
 use tokio::runtime::Runtime;
 use tokio::io::AsyncReadExt;
 use std::io::Cursor;

@@ -1,6 +1,6 @@
-//! Integration tests for mime_rs library
+//! Integration tests for tokio-mime library
 
-use mime_rs::*;
+use tokio_mime::*;
 use std::io::Cursor;
 use tokio::io::AsyncWriteExt;
 

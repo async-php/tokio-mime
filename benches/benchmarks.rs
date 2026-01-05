@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Throughput};
-use mime_rs::*;
+use tokio_mime::*;
 use std::io::Cursor;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 

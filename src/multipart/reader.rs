@@ -34,7 +34,7 @@ impl<R: AsyncRead + Unpin> Reader<R> {
     /// # Examples
     ///
     /// ```no_run
-    /// use mime_rs::multipart::Reader;
+    /// use tokio_mime::multipart::Reader;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let data = b"--boundary\r\n...";
@@ -81,7 +81,7 @@ impl<R: AsyncRead + Unpin> Reader<R> {
     /// # Examples
     ///
     /// ```no_run
-    /// use mime_rs::multipart::Reader;
+    /// use tokio_mime::multipart::Reader;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let data = b"--boundary\r\n...";

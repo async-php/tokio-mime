@@ -16,7 +16,7 @@ const UPPER_HEX: &[u8] = b"0123456789ABCDEF";
 /// # Examples
 ///
 /// ```
-/// use mime_rs::parse_media_type;
+/// use tokio_mime::parse_media_type;
 ///
 /// let (media_type, params) = parse_media_type("text/html; charset=utf-8").unwrap();
 /// assert_eq!(media_type, "text/html");
@@ -72,7 +72,7 @@ pub fn parse_media_type(v: &str) -> Result<(String, HashMap<String, String>)> {
 /// # Examples
 ///
 /// ```
-/// use mime_rs::format_media_type;
+/// use tokio_mime::format_media_type;
 /// use std::collections::HashMap;
 ///
 /// let mut params = HashMap::new();
