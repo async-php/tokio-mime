@@ -19,7 +19,7 @@ impl<W: AsyncWrite + Unpin> Writer<W> {
     /// # Examples
     ///
     /// ```no_run
-    /// use tokio_mime::multipart::Writer;
+    /// use yamine::multipart::Writer;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut output = Vec::new();

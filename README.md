@@ -1,9 +1,9 @@
-# tokio-mime
+# yamine
 
-[![Crates.io](https://img.shields.io/crates/v/tokio-mime.svg)](https://crates.io/crates/tokio-mime)
-[![Documentation](https://docs.rs/tokio-mime/badge.svg)](https://docs.rs/tokio-mime)
+[![Crates.io](https://img.shields.io/crates/v/yamine.svg)](https://crates.io/crates/yamine)
+[![Documentation](https://docs.rs/yamine/badge.svg)](https://docs.rs/yamine)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![Build Status](https://img.shields.io/github/workflow/status/async-php/tokio-mime/CI)](https://github.com/async-php/tokio-mime/actions)
+[![Build Status](https://img.shields.io/github/workflow/status/async-php/yamine/CI)](https://github.com/async-php/yamine/actions)
 
 > Complete Rust port of Go's `mime` package with async-first design
 
@@ -26,7 +26,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokio-mime = "0.1.0"
+yamine = "0.1.0"
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -35,7 +35,7 @@ tokio = { version = "1", features = ["full"] }
 ### MIME Type Detection
 
 ```rust
-use tokio_mime::type_by_extension;
+use yamine::type_by_extension;
 
 // Get MIME type by file extension
 let mime_type = type_by_extension(".html");
@@ -48,7 +48,7 @@ assert_eq!(mime_type, Some("image/jpeg".to_string()));
 ### Media Type Parsing
 
 ```rust
-use tokio_mime::parse_media_type;
+use yamine::parse_media_type;
 
 let (media_type, params) = parse_media_type("text/html; charset=utf-8").unwrap();
 assert_eq!(media_type, "text/html");
@@ -58,7 +58,7 @@ assert_eq!(params.get("charset"), Some(&"utf-8".to_string()));
 ### Multipart Form Data
 
 ```rust
-use tokio_mime::multipart::Writer;
+use yamine::multipart::Writer;
 use tokio::io::AsyncWriteExt;
 
 #[tokio::main]
@@ -83,7 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Reading Multipart Data
 
 ```rust
-use tokio_mime::multipart::Reader;
+use yamine::multipart::Reader;
 use tokio::io::AsyncReadExt;
 
 #[tokio::main]
@@ -111,7 +111,7 @@ value\r\n\
 ### Quoted-Printable Encoding
 
 ```rust
-use tokio_mime::quotedprintable::Writer;
+use yamine::quotedprintable::Writer;
 use tokio::io::AsyncWriteExt;
 
 #[tokio::main]
@@ -132,7 +132,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Encoded Words (Email Headers)
 
 ```rust
-use tokio_mime::{WordEncoder, WordDecoder};
+use yamine::{WordEncoder, WordDecoder};
 
 // Encoding
 let encoder = WordEncoder::QEncoding;
@@ -245,7 +245,7 @@ cargo run --example basic_mime_type
 
 ## Comparison with Other Libraries
 
-| Feature | mime-rs | mime | mailparse |
+| Feature | yamine | mime | mailparse |
 |---------|---------|------|-----------|
 | MIME type detection | ✅ | ❌ | ❌ |
 | Media type parsing | ✅ | ✅ | ✅ |
@@ -269,8 +269,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```bash
 # Clone the repository
-git clone https://github.com/async-php/tokio-mime.git
-cd tokio-mime
+git clone https://github.com/async-php/yamine.git
+cd yamine
 
 # Run tests
 cargo test
@@ -311,10 +311,10 @@ at your option.
 
 ## Resources
 
-- [Documentation](https://docs.rs/tokio-mime)
-- [Crates.io](https://crates.io/crates/tokio-mime)
-- [Repository](https://github.com/async-php/tokio-mime)
-- [Issue Tracker](https://github.com/async-php/tokio-mime/issues)
+- [Documentation](https://docs.rs/yamine)
+- [Crates.io](https://crates.io/crates/yamine)
+- [Repository](https://github.com/async-php/yamine)
+- [Issue Tracker](https://github.com/async-php/yamine/issues)
 - [Author](https://github.com/hackmasker)
 
 ### RFCs Implemented

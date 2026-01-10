@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use tokio_mime::WordDecoder;
+use yamine::WordDecoder;
 
 fuzz_target!(|data: &[u8]| {
     // Convert bytes to string

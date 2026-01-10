@@ -667,25 +667,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tokio-mime"
-version = "0.1.0"
-dependencies = [
- "base64",
- "bytes",
- "criterion",
- "futures",
- "getrandom 0.2.16",
- "once_cell",
- "pin-project",
- "thiserror",
- "tokio",
- "tokio-test",
- "tokio-util",
- "uuid",
- "winreg",
-]
-
-[[package]]
 name = "tokio-stream"
 version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -924,6 +905,25 @@ name = "wit-bindgen"
 version = "0.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
+
+[[package]]
+name = "yamine"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bytes",
+ "criterion",
+ "futures",
+ "getrandom 0.2.16",
+ "once_cell",
+ "pin-project",
+ "thiserror",
+ "tokio",
+ "tokio-test",
+ "tokio-util",
+ "uuid",
+ "winreg",
+]
 
 [[package]]
 name = "zerocopy"

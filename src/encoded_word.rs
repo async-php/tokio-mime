@@ -43,7 +43,7 @@ impl WordEncoder {
     /// # Examples
     ///
     /// ```
-    /// use tokio_mime::WordEncoder;
+    /// use yamine::WordEncoder;
     ///
     /// let encoder = WordEncoder::QEncoding;
     /// let encoded = encoder.encode("UTF-8", "Hello, 世界");
@@ -167,7 +167,7 @@ impl WordDecoder {
     /// # Examples
     ///
     /// ```
-    /// use tokio_mime::WordDecoder;
+    /// use yamine::WordDecoder;
     ///
     /// let decoder = WordDecoder::new();
     /// let decoded = decoder.decode("=?UTF-8?q?Hello?=").unwrap();
@@ -204,7 +204,7 @@ impl WordDecoder {
     /// # Examples
     ///
     /// ```
-    /// use tokio_mime::WordDecoder;
+    /// use yamine::WordDecoder;
     ///
     /// let decoder = WordDecoder::new();
     /// let decoded = decoder.decode_header("Subject: =?UTF-8?q?Hello?=").unwrap();

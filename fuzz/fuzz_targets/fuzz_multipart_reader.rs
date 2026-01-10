@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use tokio_mime::multipart::Reader;
+use yamine::multipart::Reader;
 use tokio::runtime::Runtime;
 use std::io::Cursor;
 
