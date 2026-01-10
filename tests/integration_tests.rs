@@ -1,6 +1,6 @@
-//! Integration tests for yamine library
+//! Integration tests for yamime library
 
-use yamine::*;
+use yamime::*;
 use std::io::Cursor;
 use tokio::io::AsyncWriteExt;
 

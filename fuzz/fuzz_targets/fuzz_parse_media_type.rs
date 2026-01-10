@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use yamine::parse_media_type;
+use yamime::parse_media_type;
 
 fuzz_target!(|data: &[u8]| {
     // Convert bytes to string

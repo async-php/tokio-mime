@@ -1,5 +1,5 @@
 [package]
-name = "yamine"
+name = "yamime"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
@@ -8,7 +8,7 @@ description = "Complete Rust port of Go's mime package with async-first design"
 license = "MIT OR Apache-2.0"
 keywords = ["mime", "multipart", "email", "http", "async"]
 categories = ["asynchronous", "email", "encoding", "parsing", "web-programming"]
-repository = "https://github.com/async-php/yamine"
+repository = "https://github.com/async-php/yamime"
 
 [dependencies]
 tokio = { version = "1.35", features = ["io-util", "fs", "rt", "macros"] }
@@ -31,7 +31,7 @@ tokio-test = "0.4"
 criterion = { version = "0.5", features = ["async_tokio"] }
 
 [lib]
-name = "yamine"
+name = "yamime"
 path = "src/lib.rs"
 
 [[bench]]

@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use yamine::quotedprintable::Reader;
+use yamime::quotedprintable::Reader;
 use tokio::runtime::Runtime;
 use tokio::io::AsyncReadExt;
 use std::io::Cursor;

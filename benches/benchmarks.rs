@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Throughput};
-use yamine::*;
+use yamime::*;
 use std::io::Cursor;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 

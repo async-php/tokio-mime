@@ -28,7 +28,7 @@ impl<R: AsyncRead> Reader<R> {
     /// # Examples
     ///
     /// ```no_run
-    /// use yamine::quotedprintable::Reader;
+    /// use yamime::quotedprintable::Reader;
     /// use tokio::io::AsyncReadExt;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {

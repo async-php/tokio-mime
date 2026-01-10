@@ -116,7 +116,7 @@ fn set_mime_types_internal(lower_ext: &[(&str, &str)], mix_ext: &[(&str, &str)])
 /// # Examples
 ///
 /// ```
-/// use yamine::type_by_extension;
+/// use yamime::type_by_extension;
 ///
 /// assert_eq!(type_by_extension(".html"), Some("text/html; charset=utf-8".to_string()));
 /// assert_eq!(type_by_extension(".HTML"), Some("text/html; charset=utf-8".to_string()));
@@ -157,7 +157,7 @@ pub fn type_by_extension(ext: &str) -> Option<String> {
 /// # Examples
 ///
 /// ```
-/// use yamine::extensions_by_type;
+/// use yamime::extensions_by_type;
 ///
 /// let exts = extensions_by_type("image/jpeg").unwrap();
 /// assert!(exts.contains(&".jpg".to_string()));
@@ -187,7 +187,7 @@ pub fn extensions_by_type(mime_type: &str) -> Result<Vec<String>> {
 /// # Examples
 ///
 /// ```
-/// use yamine::add_extension_type;
+/// use yamime::add_extension_type;
 ///
 /// add_extension_type(".foo", "application/foo").unwrap();
 /// ```
